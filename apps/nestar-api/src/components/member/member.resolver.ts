@@ -1,7 +1,7 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { MemberService } from './member.service';
-import { LoginInput, MemberInput } from '../../libs/dto/member/member.input';
-import { Member } from '../../libs/dto/member/member';
+import { AgentsInquiry, LoginInput, MemberInput } from '../../libs/dto/member/member.input';
+import { Member, Members } from '../../libs/dto/member/member';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
@@ -28,17 +28,6 @@ export class MemberResolver {
 		console.log('Mutation: login');
 		return this.memberService.login(input);
 	}
-	// Authenticated Agent, User, Admin
-	@UseGuards(AuthGuard)
-	@Mutation(() => Member)
-	public async updateMember(
-		@Args('input') input: MemberUpdate,
-		@AuthMember('_id') memberId: ObjectId,
-	): Promise<Member> {
-		console.log('Mutation: updateMember');
-		delete input._id;
-		return this.memberService.updateMember(memberId, input);
-	}
 
 	@UseGuards(AuthGuard)
 	@Query(() => String)
@@ -55,12 +44,32 @@ export class MemberResolver {
 		console.log('Query: checkAuthRoles');
 		return `Hi ${authMember.memberNick}, you are ${authMember.memberType} (memberId: ${authMember._id})`;
 	}
+	
+	// Authenticated Agent, User, Admin
+	@UseGuards(AuthGuard)
+	@Mutation(() => Member)
+	public async updateMember(
+		@Args('input') input: MemberUpdate,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Member> {
+		console.log('Mutation: updateMember');
+		 delete input._id;
+		return this.memberService.updateMember(memberId, input);
+	}
+
 	@UseGuards(WithoutGuard)
 	@Query(() => Member)
 	public async getMember(@Args('memberId') input: string, @AuthMember('_id') memberId: ObjectId): Promise<Member> {
 		console.log('Query: getMember');
 		const targetId = shapeIntoMongoObjectId(input);
 		return this.memberService.getMember(memberId, targetId);
+	} 
+
+	@UseGuards(WithoutGuard)
+	@Query(() => Member)
+	public async getAgents(@Args('input') input: AgentsInquiry, @AuthMember('_id') memberId: ObjectId): Promise<Members> {
+		console.log('Query: getAgents');
+		return this.memberService.getAgents(memberId, input);
 	}
 
 	/** ADMIN **/
