@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, Search }
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { Member, Members } from '../../libs/dto/member/member';
-import { AgentsInquiry, LoginInput, MemberInput } from '../../libs/dto/member/member.input';
+import { AgentsInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member/member.input';
 import { MemberStatus, MemberType } from '../../libs/enums/member.enum';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { AuthService } from '../auth/auth.service';
@@ -14,6 +14,9 @@ import { T } from '../../libs/types/common';
 
 @Injectable()
 export class MemberService {
+	getAllMembersByAdmin(input: MembersInquiry): Members | PromiseLike<Members> {
+		throw new Error('Method not implemented.');
+	}
 	constructor(
 		@InjectModel('Member') private readonly memberModel: Model<Member>,
 		private authService: AuthService,
@@ -36,7 +39,10 @@ export class MemberService {
 	public async login(input: LoginInput): Promise<Member> {
 		const { memberNick, memberPassword } = input;
 		console.log('input:', input);
-		const response = await this.memberModel.findOne({ memberNick: memberNick }).select('+memberPassword').exec();
+		const response: Member | null = await this.memberModel
+			.findOne({ memberNick: memberNick })
+			.select('+memberPassword')
+			.exec();
 
 		if (!response || response.memberStatus === MemberStatus.DELETE) {
 			throw new InternalServerErrorException(Message.NO_MEMBER_NICK);
@@ -54,7 +60,7 @@ export class MemberService {
 	}
 
 	public async updateMember(memberId: ObjectId, input: MemberUpdate): Promise<Member> {
-		const result = await this.memberModel
+		const result: Member | null = await this.memberModel
 
 			.findOneAndUpdate(
 				{
@@ -69,11 +75,11 @@ export class MemberService {
 		if (!result) throw new InternalServerErrorException(Message.UPLOAD_FAILED);
 
 		result.accessToken = await this.authService.createToken(result);
-		return result as Member;
+		return result;
 	}
 
-	public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member> {
-		const search = {
+	public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member | null> {
+		const search: T = {
 			_id: targetId,
 			memberStatus: {
 				$in: [MemberStatus.ACTIVE, MemberStatus.BLOCK],
@@ -105,12 +111,12 @@ export class MemberService {
 	}
 
 	public async getAgents(memberId: ObjectId, input: AgentsInquiry): Promise<Members> {
-		const text = input.search?.text;
+		const { text } = input.search;
 		const match: T = { memberType: MemberType.AGENT, memberStatus: MemberStatus.ACTIVE };
 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
 		if (text) match.memberNick = { $regex: new RegExp(text, 'i') };
-		console.log('match:', match);
+		console.log('MATCH>>>:', match);
 
 		const result = await this.memberModel
 			.aggregate([
@@ -130,11 +136,25 @@ export class MemberService {
 		return result[0];
 	}
 
-	public async getAllMembersByAdmin(): Promise<string> {
-		return 'getAllMembersByAdmin executed!';
+	public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
+		const result: Member | null = await this.memberModel
+			.findOneAndUpdate({ _id: input._id }, input, { new: true })
+			.exec();
+		if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+		return result;
 	}
 
-	public async updateAnyMemberByAdmin(): Promise<string> {
-		return 'updateAnyMemberByAdmin executed!';
-	}
+	// public async memberStartsEditor(input: StatisticModifier): Promise<Member | null> {
+	// 	console.log('executed');
+	// 	const { _id, targetKey, modifier } = input;
+	// 	return await this.memberModel
+	// 		.findOneAndUpdate(
+	// 			_id,
+	// 			{
+	// 				$inc: { [targetKey]: modifier },
+	// 			},
+	// 			{ new: true },
+	// 		)
+	// 		.exec();
+	// }
 }
