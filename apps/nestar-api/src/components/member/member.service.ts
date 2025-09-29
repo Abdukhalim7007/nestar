@@ -10,10 +10,11 @@ import { MemberUpdate } from '../../libs/dto/member/member.update';
 import { ViewService } from '../view/view.service';
 import { ViewInput } from '../../libs/dto/view/view.input';
 import { ViewGroup } from '../../libs/enums/view.enum';
-import { T } from '../../libs/types/common';
+import { StatisticModifier, T } from '../../libs/types/common';
 
 @Injectable()
 export class MemberService {
+    memberStatsEditor: any;
 	getAllMembersByAdmin(input: MembersInquiry): Members | PromiseLike<Members> {
 		throw new Error('Method not implemented.');
 	}
@@ -144,17 +145,17 @@ export class MemberService {
 		return result;
 	}
 
-	// public async memberStartsEditor(input: StatisticModifier): Promise<Member | null> {
-	// 	console.log('executed');
-	// 	const { _id, targetKey, modifier } = input;
-	// 	return await this.memberModel
-	// 		.findOneAndUpdate(
-	// 			_id,
-	// 			{
-	// 				$inc: { [targetKey]: modifier },
-	// 			},
-	// 			{ new: true },
-	// 		)
-	// 		.exec();
-	// }
+	public async memberStartsEditor(input: StatisticModifier): Promise<Member | null> {
+		console.log('executed');
+		const { _id, targetKey, modifier } = input;
+		return await this.memberModel
+			.findOneAndUpdate(
+				_id,
+				{
+					$inc: { [targetKey]: modifier },
+				},
+				{ new: true },
+			)
+			.exec();
+	}
 }
