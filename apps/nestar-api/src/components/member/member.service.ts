@@ -14,9 +14,6 @@ import { StatisticModifier, T } from '../../libs/types/common';
 
 @Injectable()
 export class MemberService {
-	memberStatsEditor(arg0: { _id: Schema.Types.ObjectId; targetKey: string; modifier: number; }) {
-		throw new Error('Method not implemented.');
-	}
 	constructor(
 		@InjectModel('Member') private readonly memberModel: Model<Member>,
 		private authService: AuthService,
@@ -170,7 +167,7 @@ export class MemberService {
 		return result;
 	}
 
-	public async memberStartsEditor(input: StatisticModifier): Promise<Member | null> {
+	public async memberStatsEditor(input: StatisticModifier): Promise<Member | null> {
 		console.log('executed');
 		const { _id, targetKey, modifier } = input;
 		return await this.memberModel
