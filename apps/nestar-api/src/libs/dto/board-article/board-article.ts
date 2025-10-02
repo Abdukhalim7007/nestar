@@ -1,6 +1,6 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { BoardArticleCategory, BoardArticleStatus } from '../../enums/board-article.enum';
-import { ObjectId } from 'mongoose';
+import type { ObjectId } from 'mongoose';
 import { Member, TotalCounter } from '../member/member';
 
 @ObjectType()
@@ -45,6 +45,7 @@ export class BoardArticle {
 
 	@Field(() => Member, { nullable: true })
 	memberData?: Member;
+	meLiked: any;
 }
 
 @ObjectType()
