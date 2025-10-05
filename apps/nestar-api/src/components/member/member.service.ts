@@ -14,6 +14,7 @@ import { StatisticModifier, T } from '../../libs/types/common';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeService } from '../like/like.service';
 import { LikeGroup } from '../../libs/enums/like.enum';
+import { MeLiked } from '../../libs/dto/like/like';
 
 @Injectable()
 export class MemberService {
@@ -106,6 +107,9 @@ export class MemberService {
 
 				targetMember.memberViews++;
 			}
+
+			const likeInput = { memberId: memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER };
+			targetMember.meLiked = await this.likeService.checkLikeExistence(likeInput);
 		}
 
 		return targetMember;
