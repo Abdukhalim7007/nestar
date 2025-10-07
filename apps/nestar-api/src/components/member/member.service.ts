@@ -81,7 +81,7 @@ export class MemberService {
 		return result;
 	}
 
-	public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member> {
+	public async getMember(memberId: ObjectId | null, targetId: ObjectId): Promise<Member> {
 		const search: T = {
 			_id: targetId,
 			memberStatus: {
@@ -100,9 +100,9 @@ export class MemberService {
 			}
 
 			const likeInput = { memberId: memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER };
-			targetMember.meLiked = await this.likeService.checkLikeExistence(likeInput);
+			(targetMember as Member).meLiked = await this.likeService.checkLikeExistence(likeInput);
 
-			targetMember.meFollowed = await this.checkSubscription(memberId, targetId);
+			(targetMember as Member).meFollowed = await this.checkSubscription(memberId, targetId);
 		}
 
 		return targetMember;
