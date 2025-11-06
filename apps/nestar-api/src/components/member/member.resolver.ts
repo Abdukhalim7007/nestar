@@ -73,7 +73,7 @@ export class MemberResolver {
 	}
 
 	@UseGuards(WithoutGuard)
-	@Query(() => Member)
+	@Query(() => Members)
 	public async getAgents(
 		@Args('input') input: AgentsInquiry,
 		@AuthMember('_id') memberId: ObjectId, //
